@@ -22,12 +22,48 @@ public class CarroServiceImpl implements CarroService{
         List<Carro> listaCarros = new ArrayList<>();
 
         iterador.forEach(listaCarros::add);
-        /*while(iterador.iterator().hasNext()){
-            var umItem = iterador.iterator().next();
-            listaCarros.add(umItem);
-        }*/
 
         return listaCarros;
     }
-    
+
+    @Override
+    public Carro getById(String id) {
+        var carro = repository.findById(id);
+        if(carro.isPresent())
+            return carro.get();
+        return null;
+    }
+
+    @Override
+    public Carro saveNew(Carro carro) {
+        carro.setId(null);
+        return repository.save(carro);
+    }
+
+    @Override
+    public Carro update(String id, Carro carro) {
+        var buscaCarroAntigo = repository.findById(id);
+        if (buscaCarroAntigo.isPresent()){
+            var carroAntigo = buscaCarroAntigo.get();
+
+            //Atualizar cada atributo do objeto antigo 
+            carroAntigo.setPlaca(carro.getPlaca());
+            
+            return repository.save(carroAntigo);
+        }
+        return null;
+    }
+
+    @Override
+    public Carro delete(String id) {
+        var buscaCarro = repository.findById(id);
+        if (buscaCarro.isPresent()){
+            var carro = buscaCarro.get();
+
+            repository.delete(carro);
+
+            return carro;
+        }
+        return null;
+    }
 }

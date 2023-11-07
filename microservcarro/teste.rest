@@ -1,1 +1,27 @@
+### Buscar todos os carros
 GET http://localhost:8080/api/v1/carros
+
+### Buscar carro pelo ID
+GET http://localhost:8080/api/v1/carros/580c1134-0409-46e9-99a5-887b8e90636f
+
+### Inserir um novo Carro
+POST http://localhost:8080/api/v1/carros
+Content-Type: application/json
+
+{
+  "placa": "MDB3389"
+}
+
+### Atualizar o  Carro
+PUT http://localhost:8080/api/v1/carros/580c1134-0409-46e9-99a5-887b8e90636f
+Content-Type: application/json
+
+{
+  "placa": "MAS1334-2"
+}
+
+
+### Remover o Carro
+DELETE  http://localhost:8080/api/v1/carros/580c1134-0409-46e9-99a5-887b8e90636f
+Content-Type: application/json
+
