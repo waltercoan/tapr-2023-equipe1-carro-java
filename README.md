@@ -65,3 +65,261 @@ az ad signed-in-user show
 ```
 az cosmosdb sql role assignment create --account-name COSMOSDBACCOUNT --resource-group GRUPODERECURSO --role-assignment-id 00000000-0000-0000-0000-000000000002 --role-definition-name "Cosmos DB Built-in Data Contributor" --scope "/" --principal-id GUIDUSUARIOAD
 ```
+
+### Falha de conexão com o CosmosDB devido bloqueio na rede da UNIVILLE
+- Alunos que utilizarem seus notebooks pessoais conectados a rede UNIVILLE devem alterar o arquivo application.properties para modificar o método de conexão da aplicação com o CosmosDB
+- [CosmosDB Gateway Connection](https://learn.microsoft.com/en-us/azure/cosmos-db/dedicated-gateway)
+```
+spring.cloud.azure.cosmos.connection-mode=gateway
+```
+
+## CRUD API REST
+### Verbo GET
+- Objetivo: Retornar uma lista de objetos ou um objeto específico a partir da chave
+#### CarroService.java
+- Criar os métodos na interface do serviço
+```
+public interface CarroService {
+    public List<Carro> getAll();
+    public Carro getById(String id);
+}
+```
+#### CarroServiceImpl.java
+- Implementar a lógica de consulta na classe concreta do serviço
+```
+@Service
+public class CarroServiceImpl implements CarroService{
+
+    @Autowired
+    private CarroRepository repository;
+
+    @Override
+    public List<Carro> getAll() {
+        var iterador = repository.findAll();
+        List<Carro> listaCarros = new ArrayList<>();
+
+        iterador.forEach(listaCarros::add);
+
+        return listaCarros;
+    }
+
+    @Override
+    public Carro getById(String id) {
+        var carro = repository.findById(id);
+        if(carro.isPresent())
+            return carro.get();
+        return null;
+    }
+}
+```
+#### CarroAPIController.java
+- Implememntar no controlador os métodos para buscar do banco todos os carros e para buscar um único carro pelo ID 
+```
+@RestController
+@RequestMapping("/api/v1/carros")
+public class CarroAPIController {
+
+    @Autowired
+    private CarroService service;
+
+    @GetMapping
+    public ResponseEntity<List<Carro>> listaCarros(){
+        var listaCarros = service.getAll();
+        return 
+            new ResponseEntity<List<Carro>>
+            (listaCarros, HttpStatus.OK);
+    }
+    @GetMapping("/{id}")
+    public ResponseEntity<Carro> buscarCarro(@PathParam("id") String id){
+        var carro = service.getById(id);
+        if(carro == null){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return 
+            new ResponseEntity<Carro>
+            (carro, HttpStatus.OK);
+    }
+}
+```
+#### teste.rest
+- Implementação do teste do verbo GET
+```
+### Buscar todos os carros
+GET http://localhost:8080/api/v1/carros
+
+### Buscar carro pelo ID
+GET http://localhost:8080/api/v1/carros/580c1134-0409-46e9-99a5-887b8e90636f
+```
+
+### Verbo POST
+- Objetivo: Inserir uma nova instância da entidade no banco de dados
+
+#### CarroService.java
+- Criar o método saveNew na interface de serviço
+```
+public interface CarroService {
+    public List<Carro> getAll();
+    public Carro getById(String id);
+    public Carro saveNew(Carro carro);
+}
+```
+#### CarroServiceImpl.java
+- Implementar a lógica para salvar a nova entidade no banco, o campo ID é alterado para null para garantir que o método será utilizado apenas para incluir novos registros
+```
+@Override
+public Carro saveNew(Carro carro) {
+	carro.setId(null);
+	return repository.save(carro);
+}
+```
+#### CarroAPIController.java
+- Implememntar no controlador o metodo para inserir o novo carro no sistema.
+**IMPORTANTE há duas classes RequestBody em pacotes diferentes, utilizar o pacote correto**
+```
+import org.springframework.web.bind.annotation.RequestBody;
+//...
+@PostMapping
+    public ResponseEntity<Carro> inserirCarro(@RequestBody Carro carro){
+        if(carro == null){
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        carro = service.saveNew(carro);
+        return 
+            new ResponseEntity<Carro>
+            (carro, HttpStatus.OK);
+    }
+```
+
+#### teste.rest
+- Implementação do teste do verbo POST
+```
+### Inserir um novo Carro
+POST http://localhost:8080/api/v1/carros
+Content-Type: application/json
+
+{
+  "placa": "MDB3389"
+}
+```
+
+### Verbo PUT
+- Objetivo: Alterar os dados de uma determinada instância da entidade
+
+#### CarroService.java
+- Criar o método update na interface de serviço
+```
+public interface CarroService {
+    public List<Carro> getAll();
+    public Carro getById(String id);
+    public Carro saveNew(Carro carro);
+    public Carro update(String id, Carro carro);
+}
+```
+
+#### CarroServiceImpl.java
+- Implementar a lógica para realizar o update da entidade no banco
+```
+@Override
+public Carro update(String id, Carro carro) {
+	var buscaCarroAntigo = repository.findById(id);
+	if (buscaCarroAntigo.isPresent()){
+		var carroAntigo = buscaCarroAntigo.get();
+
+		//Atualizar cada atributo do objeto antigo 
+		carroAntigo.setPlaca(carro.getPlaca());
+
+		return repository.save(carroAntigo);
+	}
+	return null;
+}
+```
+
+#### CarroAPIController.java
+- Implememntar no controlador o metodo para realizar o update do registro
+**IMPORTANTE há duas classes RequestBody em pacotes diferentes, utilizar o pacote correto**
+```
+@PutMapping("/{id}")
+public ResponseEntity<Carro> atualizarCarro(@PathVariable("id")  String id, @RequestBody Carro carro){
+	if(carro == null || id == ""  || id == null){
+		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+	}
+	carro = service.update(id, carro);
+	if(carro == null){
+		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+	}
+	return 
+		new ResponseEntity<Carro>
+		(carro, HttpStatus.OK);
+}
+```
+
+#### teste.rest
+- Implementação do teste do verbo PUT
+
+```
+### Atualizar o  Carro
+PUT http://localhost:8080/api/v1/carros/580c1134-0409-46e9-99a5-887b8e90636f
+Content-Type: application/json
+
+{
+  "placa": "MAS1334-2"
+}
+```
+
+### Verbo DELETE
+- Objetivo: Remover uma instância da entidade
+
+#### CarroService.java
+- Criar o método delete na interface de serviço
+```
+public interface CarroService {
+    public List<Carro> getAll();
+    public Carro getById(String id);
+    public Carro saveNew(Carro carro);
+    public Carro update(String id, Carro carro);
+    public Carro delete(String id);
+}
+```
+#### CarroServiceImpl.java
+- Implementar a lógica para realizar a exclusão da entidade no banco
+
+```
+@Override
+    public Carro delete(String id) {
+        var buscaCarro = repository.findById(id);
+        if (buscaCarro.isPresent()){
+            var carro = buscaCarro.get();
+
+            repository.delete(carro);
+
+            return carro;
+        }
+        return null;
+    }
+```
+
+#### CarroAPIController.java
+- Implememntar no controlador o metodo para realizar a exclusão do registro
+```
+@DeleteMapping("/{id}")
+public ResponseEntity<Carro> removerCarro(@PathVariable("id")  String id){
+	if(id == ""  || id == null){
+		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+	}
+	var carro = service.delete(id);
+	if(carro == null){
+		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+	}
+	return 
+		new ResponseEntity<Carro>
+		(carro, HttpStatus.OK);
+}
+```
+
+#### teste.rest
+- Implementação do teste do verbo DELETE
+```
+### Remover o Carro
+DELETE  http://localhost:8080/api/v1/carros/580c1134-0409-46e9-99a5-887b8e90636f
+Content-Type: application/json
+```
