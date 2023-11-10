@@ -73,6 +73,33 @@ az cosmosdb sql role assignment create --account-name COSMOSDBACCOUNT --resource
 spring.cloud.azure.cosmos.connection-mode=gateway
 ```
 
+### Erro CORS
+- [O que é o erro de CORS](https://pt.wikipedia.org/wiki/Cross-origin_resource_sharing#:~:text=Cross-origin%20resource%20sharing%20%E2%80%93%20Wikip%C3%A9dia%2C%20a%20enciclop%C3%A9dia%20livre,pertence%20o%20recurso%20que%20ser%C3%A1%20recuperado.%20%5B%201%5D)
+
+#### Solução
+- Criaruma pasta config
+- Criar a classe WebConfig.java
+```
+package br.edu.univille.microservcarro.config;
+
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+@Configuration
+@EnableWebMvc
+public class WebConfig implements WebMvcConfigurer  {
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**");
+
+    }
+}
+```
+
+
 ## CRUD API REST
 ### Verbo GET
 - Objetivo: Retornar uma lista de objetos ou um objeto específico a partir da chave
@@ -323,3 +350,4 @@ public ResponseEntity<Carro> removerCarro(@PathVariable("id")  String id){
 DELETE  http://localhost:8080/api/v1/carros/580c1134-0409-46e9-99a5-887b8e90636f
 Content-Type: application/json
 ```
+
