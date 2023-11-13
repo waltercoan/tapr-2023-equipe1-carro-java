@@ -9,11 +9,15 @@ POST http://localhost:8080/api/v1/carros
 Content-Type: application/json
 
 {
-  "placa": "MDB3389"
+  "placa": "MDB3389",
+  "modelo": { 
+    "descricao":"FIAT UNO",
+    "marca":"FIAT"
+  }
 }
 
 ### Atualizar o  Carro
-PUT http://localhost:8080/api/v1/carros/580c1134-0409-46e9-99a5-887b8e90636f
+PUT http://localhost:8080/api/v1/carros/0e177dd4-4313-48a5-86d3-0796886c512a
 Content-Type: application/json
 
 {
