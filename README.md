@@ -1,5 +1,8 @@
 # tapr-2023-equipe1-carro-java
 
+![Diagrama](diagramas/tapr-microsservico2023.png "Diagrama")
+- [Diagrama](diagramas/tapr-microsservico2023.vsdx)
+
 ## Autenticação no AZURE
 [DOC](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli-linux?pivots=apt)
 
@@ -351,3 +354,9 @@ DELETE  http://localhost:8080/api/v1/carros/580c1134-0409-46e9-99a5-887b8e90636f
 Content-Type: application/json
 ```
 
+## Chaves de partição
+- [DOC: Particionamento](https://learn.microsoft.com/en-us/azure/cosmos-db/partitioning-overview)
+
+
+## Modelagem de bancos de dados NoSQL
+- [DOC: Modelagem de dados](https://learn.microsoft.com/en-us/azure/cosmos-db/nosql/modeling-data)
