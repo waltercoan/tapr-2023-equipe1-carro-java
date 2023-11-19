@@ -68,5 +68,10 @@ public class ClienteServiceImpl
         }
         return null;
     }
+
+    @Override
+    public Cliente update(Cliente cliente) {
+        return repository.save(cliente);
+    }
     
 }

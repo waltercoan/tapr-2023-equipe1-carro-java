@@ -8,5 +8,6 @@ public interface ClienteService {
     public Cliente getById(String id);
     public Cliente saveNew(Cliente cliente);
     public Cliente update(String id, Cliente cliente);
+    public Cliente update(Cliente cliente);
     public Cliente delete(String id);
 }

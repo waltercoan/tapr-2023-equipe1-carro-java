@@ -4,17 +4,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import br.edu.univille.microservcarro.entity.Carro;
 import br.edu.univille.microservcarro.repository.CarroRepository;
 import br.edu.univille.microservcarro.service.CarroService;
+import io.dapr.client.DaprClient;
+import io.dapr.client.DaprClientBuilder;
 
 @Service
 public class CarroServiceImpl implements CarroService{
 
     @Autowired
     private CarroRepository repository;
+    private DaprClient client = new DaprClientBuilder().build();
+    @Value("${app.component.topic.carro}")
+    private String TOPIC_NAME;
+    @Value("${app.component.service}")
+	private String PUBSUB_NAME;
 
     @Override
     public List<Carro> getAll() {
@@ -37,7 +45,9 @@ public class CarroServiceImpl implements CarroService{
     @Override
     public Carro saveNew(Carro carro) {
         carro.setId(null);
-        return repository.save(carro);
+        carro = repository.save(carro);
+        publicarAtualizacao(carro);
+        return carro;
     }
 
     @Override
@@ -48,8 +58,9 @@ public class CarroServiceImpl implements CarroService{
 
             //Atualizar cada atributo do objeto antigo 
             carroAntigo.setPlaca(carro.getPlaca());
-            
-            return repository.save(carroAntigo);
+            carroAntigo = repository.save(carroAntigo);
+            publicarAtualizacao(carroAntigo);
+            return carroAntigo;
         }
         return null;
     }
@@ -65,5 +76,12 @@ public class CarroServiceImpl implements CarroService{
             return carro;
         }
         return null;
+    }
+    //método privado para publicar a atualização
+    private void publicarAtualizacao(Carro carro){
+        client.publishEvent(
+					PUBSUB_NAME,
+					TOPIC_NAME,
+					carro).block();
     }
 }

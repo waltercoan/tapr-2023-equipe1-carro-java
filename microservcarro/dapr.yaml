@@ -1,0 +1,9 @@
+version: 1
+common:
+  resourcesPath: ./components/
+apps:
+  - appID: tapr-2023-equipe1-carro-java
+    appDirPath: ./target/
+    appPort: 8080
+    command: ["java", "-jar", "microservcarro-0.0.1-SNAPSHOT.jar"]
+

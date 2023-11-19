@@ -9,9 +9,9 @@ POST http://localhost:8080/api/v1/carros
 Content-Type: application/json
 
 {
-  "placa": "MDB3389",
+  "placa": "MAS1234",
   "modelo": { 
-    "descricao":"FIAT UNO",
+    "descricao":"FIAT TORO",
     "marca":"FIAT"
   }
 }

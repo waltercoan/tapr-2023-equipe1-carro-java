@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.edu.univille.microservcarro.entity.Cliente;
 import br.edu.univille.microservcarro.service.ClienteService;
+import io.dapr.Topic;
+import io.dapr.client.domain.CloudEvent;
 
 @RestController
 @RequestMapping("/api/v1/clientes")
@@ -72,6 +75,16 @@ public class ClienteAPIController {
         if(cliente == null){
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+        return 
+            new ResponseEntity<Cliente>
+            (cliente, HttpStatus.OK);
+    }
+
+    @Topic(name = "${app.component.topic.cliente}", pubsubName = "${app.component.service}")
+    @PostMapping(path = "/event", consumes = MediaType.ALL_VALUE)
+    public ResponseEntity<Cliente> atualizarCliente(@RequestBody(required = false) CloudEvent<Cliente> cloudEvent){
+        var cliente = service.update(cloudEvent.getData());
+        System.out.println("EVENT" + cliente.getNome());
         return 
             new ResponseEntity<Cliente>
             (cliente, HttpStatus.OK);
